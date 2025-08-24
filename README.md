@@ -21,7 +21,7 @@ neo4j installation (with github source code):
 # install neo4j
 mkdir ~/neo4j-benchmark/neo4j-compiled
 cd ~/neo4j-benchmark/neo4j
-mvn clean install -T 1C -DskipTests
+mvn clean install -T 1 -DskipTests
 cp packaging/standalone/target/neo4j-community-5.26.0-unix.tar.gz ~/neo4j-benchmark/neo4j-compiled/
 cd ~/neo4j-benchmark/neo4j-compiled/
 tar -xzf neo4j-community-5.26.0-unix.tar.gz
@@ -29,8 +29,8 @@ mv neo4j-community-5.26.0 neo4j-server
 export NEO4J_HOME=~/neo4j-benchmark/neo4j-compiled/neo4j-server
 
 # install neo4j GDS plugin
-wget https://github.com/neo4j/graph-data-science/releases/download/2.20.0/neo4j-graph-data-science-2.20.0.jar
-mv neo4j-graph-data-science-2.20.0.jar $NEO4J_HOME/plugins/
+wget https://github.com/neo4j/graph-data-science/releases/download/2.13.2/neo4j-graph-data-science-2.13.2.jar
+mv neo4j-graph-data-science-2.13.2.jar $NEO4J_HOME/plugins/
 ```
 
 configurate neo4j server:
@@ -48,6 +48,18 @@ cd ~/neo4j-benchmark/
 mvn clean package
 ```
 
+### Download dataset
+
+| Dataset Name   | Directed   | Property | Nodes      | Edges         |
+| -------------- | ---------- | -------- | ---------- | ------------- |
+| com-DBLP       | undirected | NO       | 317,080    | 1,049,866     |
+| Twitch         | undirected | NO       | 168,114    | 6,797,557     |
+| Wiki-Talk      | directed   | NO       | 2,394,385  | 5,021,410     |
+| Cit-Patents    | directed   | NO       | 3,774,768  | 16,518,947    |
+| Wikipedia      |            | NO       | 3,333,397  | 123,709,902   |
+| Orkut          | undirected | NO       | 3,072,441  | 234,370,166   |
+| Freebase Large |            | YES      | 28,408,172 | 31,475,362    |
+| Twitter        | directed   | NO       | 41,652,230 | 1,202,513,046 |
 
 ### Running Tests
 
@@ -57,8 +69,15 @@ launch neo4j server:
 # set your password at first time 
 $NEO4J_HOME/bin/neo4j start
 $NEO4J_HOME/bin/neo4j status
-$NEO4J_HOME/bin/neo4j stop
 ```
 
+admin login and set passowrd
+
+```sh
+$NEO4J_HOME/bin/neo4j stop
+export NEO4J_PASSWORD="neo4j-password"
+$NEO4J_HOME/bin/neo4j-admin dbms set-initial-password $NEO4J_PASSWORD
+$NEO4J_HOME/bin/neo4j start # restart neo4j
+```
 
 
