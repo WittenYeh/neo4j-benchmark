@@ -1,19 +1,7 @@
-import org.neo4j.driver.*;
-import org.neo4j.driver.exceptions.Neo4jException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Command(name = "neo4j-benchmark", mixinStandardHelpOptions = true,
         description = "A benchmark tool for Neo4j, mirroring the Nebula Graph test suite.")
@@ -47,10 +35,13 @@ public class Neo4jBenchmark implements Callable<Integer> {
     @Option(names = "--algm", description = "The algorithm to be tested.", defaultValue = "all")
     private String algm;
 
+    @Option(names = "--report-path", description = "Path to save the detailed benchmark report file.")
+    private String reportPath;
+
     // --- Main Execution Logic ---
     @Override
-    public Integer call() throws Exception {
-        try (BenchmarkRunner benchmarker = new BenchmarkRunner(uri, user, password, graphName)) {
+    public Integer call() {
+        try (BenchmarkRunner benchmarker = new BenchmarkRunner(uri, user, password, graphName, reportPath)) {
             switch (command) {
                 case load_graph:
                     benchmarker.dropGraph();
@@ -68,7 +59,7 @@ public class Neo4jBenchmark implements Callable<Integer> {
                 case test_read_write_op:
                     benchmarker.readWriteTest(readRatio);
                     break;
-                case test_property:  // maybe not vert precise now
+                case test_property:
                     benchmarker.propertyOpTest();
                     break;
                 case test_algm:

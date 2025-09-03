@@ -6,10 +6,10 @@ Benchmark neo4j performance
 
 ### Preparation
 
-`java-17` and `maven` installation (with conda)
+`python-3.10`, `java-17` and `maven` installation (with conda)
 
 ```sh
-conda create -n 'neo4j-benchmark' openjdk=17 maven -y
+conda create -n 'neo4j-benchmark' python=3.10 openjdk=17 maven -y
 conda activate 'neo4j-benchmark'
 ```
 
@@ -21,7 +21,7 @@ neo4j installation (with github source code):
 # install neo4j
 mkdir ~/neo4j-benchmark/neo4j-compiled
 cd ~/neo4j-benchmark/neo4j
-mvn clean install -T 1 -DskipTests
+mvn clean install -T 1 -DskipTests   # use -T 1C will cause maven parallelism error
 cp packaging/standalone/target/neo4j-community-5.26.0-unix.tar.gz ~/neo4j-benchmark/neo4j-compiled/
 cd ~/neo4j-benchmark/neo4j-compiled/
 tar -xzf neo4j-community-5.26.0-unix.tar.gz
