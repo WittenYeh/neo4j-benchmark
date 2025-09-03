@@ -1,0 +1,14 @@
+# Neo4j Driver
+neo4j
+
+# Command-line interface framework
+typer[all]
+
+# Rich text and beautiful formatting in the terminal (for progress bars)
+rich
+
+# HTTP library for downloading datasets
+requests
+
+# Fast, extensible progress bars
+tqdm
