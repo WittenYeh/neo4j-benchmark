@@ -1,0 +1,8 @@
+
+==================== Read/Write Throughput Test ====================
+Max VID found: 425956
+Generating and shuffling operation list...
+Operation list generated. Starting test...
+Executing Ops: 1000 / 20000 (5.00%)Executing Ops: 2000 / 20000 (10.00%)Executing Ops: 3000 / 20000 (15.00%)Executing Ops: 4000 / 20000 (20.00%)Executing Ops: 5000 / 20000 (25.00%)Executing Ops: 6000 / 20000 (30.00%)Executing Ops: 7000 / 20000 (35.00%)Executing Ops: 8000 / 20000 (40.00%)Executing Ops: 9000 / 20000 (45.00%)Executing Ops: 10000 / 20000 (50.00%)Executing Ops: 11000 / 20000 (55.00%)Executing Ops: 12000 / 20000 (60.00%)Executing Ops: 13000 / 20000 (65.00%)Executing Ops: 14000 / 20000 (70.00%)Executing Ops: 15000 / 20000 (75.00%)Executing Ops: 16000 / 20000 (80.00%)Executing Ops: 17000 / 20000 (85.00%)Executing Ops: 18000 / 20000 (90.00%)Executing Ops: 19000 / 20000 (95.00%)Executing Ops: 20000 / 20000 (100.00%)
+
+Results for this phase appended to: ./benchmark_reports_resumable/result-com_dblp.txt
