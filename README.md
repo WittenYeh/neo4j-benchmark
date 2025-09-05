@@ -6,11 +6,23 @@ Benchmark neo4j performance
 
 ### Preparation
 
-`java-17` and `maven` installation (with conda)
+`python-3.10`, `java-17` and `maven` installation (with conda)
 
 ```sh
-conda create -n 'neo4j-benchmark' openjdk=17 maven -y
+conda create -n 'neo4j-benchmark' python=3.10 openjdk=17 maven -y
 conda activate 'neo4j-benchmark'
+```
+
+### Cloning The Repo
+
+```sh
+git clone https://github.com/WittenYeh/neo4j-benchmark
+```
+
+Initialize submodules:
+
+```sh
+git submodule init && git submodule update
 ```
 
 ### Neo4j Installation and Configuration
@@ -18,15 +30,18 @@ conda activate 'neo4j-benchmark'
 neo4j installation (with github source code):
 
 ```sh
+# Just an example, use your own repo path
+export BENCHMARK_HOME=~/neo4j-benchmark
+
 # install neo4j
-mkdir ~/neo4j-benchmark/neo4j-compiled
-cd ~/neo4j-benchmark/neo4j
-mvn clean install -T 1 -DskipTests
-cp packaging/standalone/target/neo4j-community-5.26.0-unix.tar.gz ~/neo4j-benchmark/neo4j-compiled/
-cd ~/neo4j-benchmark/neo4j-compiled/
+mkdir $BENCHMARK_HOME/neo4j-compiled
+cd $BENCHMARK_HOME/neo4j
+mvn clean install -T 1 -DskipTests   # use -T 1C will cause maven parallelism error
+cp packaging/standalone/target/neo4j-community-5.26.0-unix.tar.gz $BENCHMARK_HOME/neo4j-compiled
+cd $BENCHMARK_HOME/neo4j-compiled
 tar -xzf neo4j-community-5.26.0-unix.tar.gz
 mv neo4j-community-5.26.0 neo4j-server
-export NEO4J_HOME=~/neo4j-benchmark/neo4j-compiled/neo4j-server
+export NEO4J_HOME=$BENCHMARK_HOME/neo4j-compiled/neo4j-server
 
 # install neo4j GDS plugin
 wget https://github.com/neo4j/graph-data-science/releases/download/2.13.2/neo4j-graph-data-science-2.13.2.jar
@@ -36,19 +51,28 @@ mv neo4j-graph-data-science-2.13.2.jar $NEO4J_HOME/plugins/
 configurate neo4j server:
 
 ```sh
-vim ~/neo4j-benchmark/neo4j-compiled/neo4j-server/conf/neo4j.conf
+vim $NEO4J_HOME/conf/neo4j.conf
 # uncomment the following line:
 # server.bolt.listen_address=:7687
 ```
 
-### Neo4j-benchmark Installation
+### Neo4j Benchmark Installation
 
 ```sh
-cd ~/neo4j-benchmark/
+cd $BENCHMARK_HOME
 mvn clean package
 ```
 
-### Download dataset
+### Downloading Dataset
+
+```sh
+git clone https://github.com/WittenYeh/GraphDatasets
+# Just an example, use your own repo path
+export DATASET_HOME=~/GraphDataset/
+cd $DATASET_HOME
+python download_dataset.py
+```
+
 
 | Dataset Name   | Directed   | Property | Nodes      | Edges         |
 | -------------- | ---------- | -------- | ---------- | ------------- |
@@ -61,9 +85,9 @@ mvn clean package
 | Freebase Large |            | YES      | 28,408,172 | 31,475,362    |
 | Twitter        | directed   | NO       | 41,652,230 | 1,202,513,046 |
 
-### Running Tests
+### Launching and Loginning Neo4j
 
-launch neo4j server:
+Launch neo4j server:
 
 ```sh
 # set your password at first time 
@@ -71,7 +95,7 @@ $NEO4J_HOME/bin/neo4j start
 $NEO4J_HOME/bin/neo4j status
 ```
 
-admin login and set passowrd
+Admin login and set passowrd
 
 ```sh
 $NEO4J_HOME/bin/neo4j stop
@@ -80,4 +104,8 @@ $NEO4J_HOME/bin/neo4j-admin dbms set-initial-password $NEO4J_PASSWORD
 $NEO4J_HOME/bin/neo4j start # restart neo4j
 ```
 
+### Running Experiments
 
+```sh
+bash $BENCHMARK_HOME/experiments.sh
+```
