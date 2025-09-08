@@ -1,0 +1,121 @@
+=================================================
+        Neo4j Benchmark Results
+=================================================
+Graph Name: com_lj
+-------------------------------------------------
+
+==================== Data Loading Summary ====================
+Total time: 1681.160 seconds
+Node loading throughput: 2378.10 nodes/sec
+Edge loading throughput: 41258.64 edges/sec
+
+==================== GDS Algorithm Throughput Test ====================
+Testing algorithm(s): all
+
+--- PageRank Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 16.276 s
+Average Throughput: 4390808.25 edges/sec
+
+--- WCC Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 2.327 s
+Average Throughput: 30717539.65 edges/sec
+
+--- CDLP Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 13.085 s
+Average Throughput: 5461422.82 edges/sec
+
+--- Dijkstra (SSSP simulation) Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 17.721 s
+Average Throughput: 3914068.27 edges/sec
+
+--- BFS Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 9.073 s
+Average Throughput: 7645343.40 edges/sec
+
+==================== Data Loading Summary ====================
+Total time: 2180.387 seconds
+Node loading throughput: 1833.60 nodes/sec
+Edge loading throughput: 31811.96 edges/sec
+
+==================== Basic Operations Latency Test ====================
+
+--- Operation: Add Vertex ---
+Total Operations: 10240
+Avg Latency: 35.93 us
+Min Latency: 24.12 us
+Max Latency: 103.69 us
+p50 Latency: 28.85 us
+p95 Latency: 103.69 us
+p99 Latency: 103.69 us
+
+--- Operation: Add Edge ---
+Total Operations: 10240
+Avg Latency: 63.13 us
+Min Latency: 48.20 us
+Max Latency: 149.55 us
+p50 Latency: 52.82 us
+p95 Latency: 149.55 us
+p99 Latency: 149.55 us
+
+--- Operation: Delete Edge ---
+Attempted Operations: 10240
+Successful Deletions: 10240
+Avg Latency: 14.99 us
+Min Latency: 7.48 us
+Max Latency: 70.02 us
+p50 Latency: 8.79 us
+p95 Latency: 70.02 us
+p99 Latency: 70.02 us
+
+--- Operation: Get Neighbors ---
+Total Operations: 10240
+Avg Latency: 2421.41 us
+Min Latency: 1045.81 us
+Max Latency: 47350.88 us
+p50 Latency: 2278.82 us
+p95 Latency: 3706.28 us
+p99 Latency: 5265.99 us
+
+==================== Data Loading Summary ====================
+Total time: 1687.079 seconds
+Node loading throughput: 2369.75 nodes/sec
+Edge loading throughput: 41113.89 edges/sec
+
+==================== Read/Write Throughput Test ====================
+Configuration: Total Ops=20480, Read Ratio=0.20, Write Batch Size=1024
+
+--- Throughput Test Summary ---
+Total operations executed: 20480
+Total time: 13.016 seconds
+Throughput: 1573.40 op/s
+
+==================== Data Loading Summary ====================
+Total time: 2156.495 seconds
+Node loading throughput: 1853.92 nodes/sec
+Edge loading throughput: 32164.40 edges/sec
+
+==================== Read/Write Throughput Test ====================
+Configuration: Total Ops=20480, Read Ratio=0.50, Write Batch Size=1024
+
+--- Throughput Test Summary ---
+Total operations executed: 20480
+Total time: 33.028 seconds
+Throughput: 620.09 op/s
+
+==================== Data Loading Summary ====================
+Total time: 1863.168 seconds
+Node loading throughput: 2145.79 nodes/sec
+Edge loading throughput: 37228.19 edges/sec
+
+==================== Read/Write Throughput Test ====================
+Configuration: Total Ops=20480, Read Ratio=0.80, Write Batch Size=1024
+
+--- Throughput Test Summary ---
+Total operations executed: 20480
+Total time: 67.784 seconds
+Throughput: 302.14 op/s

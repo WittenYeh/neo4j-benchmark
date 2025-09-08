@@ -32,7 +32,7 @@ DATASET_DIR="~/GraphDatasets"   # Please use your path, e.g., ~/GraphDatasets
 REPORTS_DIR="./benchmark_reports_resumable"
 
 # 4. Neo4j database connection details
-NEO4J_URI="bolt://localhost:7687"   # Default Bolt port for Neo4j
+NEO4J_URI="bolt://localhost:19831"   # Default Bolt port for Neo4j
 NEO4J_USER="neo4j"
 NEO4J_PASS="neo4j-password" # Please use your password
 
@@ -43,8 +43,8 @@ DATASETS=(
     "cit-Patents.txt"
     # Commented out by default as it takes a very long time to run
     # "com-orkut.ungraph.txt"
-    # "com-friendster.ungraph.txt"
-    # "twitter-2010.txt"
+    # "twitter-2010.txt"        
+    # "com-friendster.ungraph.txt" 
 )
 
 # --- Main Script Logic ---
@@ -123,24 +123,24 @@ for DATASET_FILE in "${DATASETS[@]}"; do
     run_benchmark_command "$JAR_PATH" --command test_algm --graph-name "$GRAPH_NAME" --algm all --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS"
 
     # --- Phase 2: Basic Operations Tests (Modifying Operations) ---
-    echo ""
-    echo "--> [Phase 2/3] Reloading a clean graph for 'Basic Operations Test'..."
-    run_benchmark_command "$JAR_PATH" --command load_graph --graph-name "$GRAPH_NAME" --data-path "$DATASET_PATH" --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS" $UNDIRECTED_FLAG
+    # echo ""
+    # echo "--> [Phase 2/3] Reloading a clean graph for 'Basic Operations Test'..."
+    # run_benchmark_command "$JAR_PATH" --command load_graph --graph-name "$GRAPH_NAME" --data-path "$DATASET_PATH" --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS" $UNDIRECTED_FLAG
     
     echo "--> [Phase 2/3] Performing basic operations latency tests..."
     run_benchmark_command "$JAR_PATH" --command test_basic_op --graph-name "$GRAPH_NAME" --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS"
 
-    # --- Phase 3: Read/Write Throughput Tests (Modifying Operations) ---
-    echo ""
-    echo "--> [Phase 3/3] Performing read/write throughput tests..."
-    for ratio in 0.2 0.5 0.8; do
-        echo ""
-        echo "    -> Reloading graph for test with read ratio ${ratio}..."
-        run_benchmark_command "$JAR_PATH" --command load_graph --graph-name "$GRAPH_NAME" --data-path "$DATASET_PATH" --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS" $UNDIRECTED_FLAG
+    # # --- Phase 3: Read/Write Throughput Tests (Modifying Operations) ---
+    # echo ""
+    # echo "--> [Phase 3/3] Performing read/write throughput tests..."
+    # for ratio in 0.2 0.5 0.8; do
+    #     echo ""
+    #     echo "    -> Reloading graph for test with read ratio ${ratio}..."
+    #     run_benchmark_command "$JAR_PATH" --command load_graph --graph-name "$GRAPH_NAME" --data-path "$DATASET_PATH" --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS" $UNDIRECTED_FLAG
 
-        echo "    -> Running throughput test with read ratio ${ratio}..."
-        run_benchmark_command "$JAR_PATH" --command test_read_write_op --graph-name "$GRAPH_NAME" --read-ratio $ratio --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS"
-    done
+    #     echo "    -> Running throughput test with read ratio ${ratio}..."
+    #     run_benchmark_command "$JAR_PATH" --command test_read_write_op --graph-name "$GRAPH_NAME" --read-ratio $ratio --uri "$NEO4J_URI" --user "$NEO4J_USER" --password "$NEO4J_PASS"
+    # done
 
     echo ""
     echo ">>> All tests for dataset '$DATASET_FILE' are complete."

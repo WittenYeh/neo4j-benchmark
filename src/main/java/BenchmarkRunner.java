@@ -19,12 +19,13 @@ public class BenchmarkRunner implements AutoCloseable {
     private final String graphName;
     private final ResultLogger resultLogger;
 
-    private final int BATCH_SIZE = 2048;
-    private final long MAX_OPS = 20000; // Total operations for throughput test
-    private final int MAX_BASIC_OP = 1000; // Operations per latency test
+    private final int BATCH_SIZE = 4096; // Batch size for data loading
+    private final int OP_BATCH_SIZE = 10240; // Batch size for transactional operations in tests
+    private final long MAX_OPS = 20480; // Total operations for throughput test
+    private final int MAX_BASIC_OP = 10240; // Operations per latency test
 
-    private final int PROGRESS_BATCH_INTERVAL = 10;
-    private final int PROGRESS_OP_INTERVAL = 100;
+    private final int PROGRESS_BATCH_INTERVAL = 16;
+    private final int PROGRESS_OP_INTERVAL = 128;
 
     public BenchmarkRunner(String uri, String user, String password, String graphName, String resultPath) {
         this.driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
@@ -258,14 +259,23 @@ public class BenchmarkRunner implements AutoCloseable {
         long start, end;
 
         try (Session session = driver.session()) {
-            // 1. Add Vertex
+            // 1. Add Vertex (Batched)
+            List<Map<String, Object>> batch = new ArrayList<>(OP_BATCH_SIZE);
             for (int i = 0; i < MAX_BASIC_OP; i++) {
                 long vid = maxVid + i + 1;
-                start = System.nanoTime();
-                session.run("CREATE (n:`" + nodeLabel + "` {id: $id})", Map.of("id", vid));
-                end = System.nanoTime();
-                latencies.add(end - start);
-                if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rAdd Vertex: %d / %d", i+1, MAX_BASIC_OP);
+                batch.add(Map.of("id", vid));
+                if (batch.size() == OP_BATCH_SIZE || i == MAX_BASIC_OP - 1) {
+                    start = System.nanoTime();
+                    session.writeTransaction(tx -> {
+                        tx.run("UNWIND $batch as props CREATE (n:`" + nodeLabel + "` {id: props.id})", Map.of("batch", batch));
+                        return null;
+                    });
+                    end = System.nanoTime();
+                    long avgLatency = (end - start) / batch.size();
+                    for(int j=0; j<batch.size(); j++) latencies.add(avgLatency);
+                    batch.clear();
+                }
+                 if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rAdd Vertex: %d / %d", i+1, MAX_BASIC_OP);
             }
             System.out.println();
             resultLogger.log("\n--- Operation: Add Vertex ---");
@@ -273,14 +283,22 @@ public class BenchmarkRunner implements AutoCloseable {
             resultLogger.log(LatencyStats.fromNanos(latencies).toString());
             latencies.clear();
 
-            // 2. Add Edge
+            // 2. Add Edge (Batched)
             for (int i = 0; i < MAX_BASIC_OP; i++) {
                 long src = rand.nextLong(maxVid) + 1;
                 long dst = rand.nextLong(maxVid) + 1;
-                start = System.nanoTime();
-                session.run("MATCH (a:`" + nodeLabel + "` {id: $src}), (b:`" + nodeLabel + "` {id: $dst}) CREATE (a)-[:REL]->(b)", Map.of("src", src, "dst", dst));
-                end = System.nanoTime();
-                latencies.add(end - start);
+                batch.add(Map.of("src", src, "dst", dst));
+                if (batch.size() == OP_BATCH_SIZE || i == MAX_BASIC_OP - 1) {
+                    start = System.nanoTime();
+                    session.writeTransaction(tx -> {
+                       tx.run("UNWIND $batch as edge MATCH (a:`" + nodeLabel + "` {id: edge.src}), (b:`" + nodeLabel + "` {id: edge.dst}) CREATE (a)-[:REL]->(b)", Map.of("batch", batch));
+                       return null;
+                    });
+                    end = System.nanoTime();
+                    long avgLatency = (end - start) / batch.size();
+                    for(int j=0; j<batch.size(); j++) latencies.add(avgLatency);
+                    batch.clear();
+                }
                 if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rAdd Edge: %d / %d", i+1, MAX_BASIC_OP);
             }
             System.out.println();
@@ -289,20 +307,34 @@ public class BenchmarkRunner implements AutoCloseable {
             resultLogger.log(LatencyStats.fromNanos(latencies).toString());
             latencies.clear();
             
-            // 3. Delete Edge
+            // 3. Delete Edge (Batched)
             long successfulDeletions = 0;
+            List<Map<String, Object>> edgesToDelete = new ArrayList<>(OP_BATCH_SIZE);
             for (int i = 0; i < MAX_BASIC_OP; i++) {
-                long src = rand.nextLong(maxVid) + 1;
-                Result findNeighborResult = session.run("MATCH (a:`" + nodeLabel + "` {id: $src})-[:REL]->(b) RETURN b.id AS dstId LIMIT 1", Map.of("src", src));
-                if (findNeighborResult.hasNext()) {
-                    long dstId = findNeighborResult.single().get("dstId").asLong();
-                    start = System.nanoTime();
-                    session.run("MATCH (a:`" + nodeLabel + "` {id: $src})-[r:REL]->(b:`" + nodeLabel + "` {id: $dst}) WITH r LIMIT 1 DELETE r", Map.of("src", src, "dst", dstId));
-                    end = System.nanoTime();
-                    latencies.add(end - start);
-                    successfulDeletions++;
+                // Find edges to delete first
+                while(edgesToDelete.size() < OP_BATCH_SIZE && (i + edgesToDelete.size()) < MAX_BASIC_OP) {
+                     long src = rand.nextLong(maxVid) + 1;
+                     Result findNeighborResult = session.run("MATCH (a:`" + nodeLabel + "` {id: $src})-[:REL]->(b) RETURN b.id AS dstId LIMIT 1", Map.of("src", src));
+                     if (findNeighborResult.hasNext()) {
+                         long dstId = findNeighborResult.single().get("dstId").asLong();
+                         edgesToDelete.add(Map.of("src", src, "dst", dstId));
+                     }
                 }
-                if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rDelete Edge: %d / %d", i+1, MAX_BASIC_OP);
+
+                if (!edgesToDelete.isEmpty()) {
+                    start = System.nanoTime();
+                    session.writeTransaction(tx -> {
+                        tx.run("UNWIND $edges as edge MATCH (a:`" + nodeLabel + "` {id: edge.src})-[r:REL]->(b:`" + nodeLabel + "` {id: edge.dst}) WITH r LIMIT 1 DELETE r", Map.of("edges", edgesToDelete));
+                        return null;
+                    });
+                    end = System.nanoTime();
+                    long avgLatency = (end - start) / edgesToDelete.size();
+                    for(int j=0; j<edgesToDelete.size(); j++) latencies.add(avgLatency);
+                    successfulDeletions += edgesToDelete.size();
+                    i += edgesToDelete.size() - 1; // Advance outer loop counter
+                    edgesToDelete.clear();
+                }
+                if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) >= MAX_BASIC_OP) System.out.printf("\rDelete Edge: %d / %d", Math.min(i+1, MAX_BASIC_OP), MAX_BASIC_OP);
             }
             System.out.println();
             resultLogger.log("\n--- Operation: Delete Edge ---");
@@ -311,11 +343,12 @@ public class BenchmarkRunner implements AutoCloseable {
             resultLogger.log(LatencyStats.fromNanos(latencies).toString());
             latencies.clear();
 
-            // 4. Get Neighbors
+            // 4. Get Neighbors (Read-only, no batching needed for transactions)
             for (int i = 0; i < MAX_BASIC_OP; i++) {
                 long vid = rand.nextLong(maxVid) + 1;
                 start = System.nanoTime();
-                session.run("MATCH (a:`" + nodeLabel + "` {id: $vid})-->(b) RETURN b.id", Map.of("vid", vid));
+                // Use readTransaction for read-only queries
+                session.readTransaction(tx -> tx.run("MATCH (a:`" + nodeLabel + "` {id: $vid})-->(b) RETURN b.id", Map.of("vid", vid)).consume());
                 end = System.nanoTime();
                 latencies.add(end - start);
                 if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rGet Neighbors: %d / %d", i+1, MAX_BASIC_OP);
@@ -330,7 +363,7 @@ public class BenchmarkRunner implements AutoCloseable {
     public void readWriteTest(double readRatio) {
         System.out.println("\n" + "=".repeat(20) + " Read/Write Throughput Test " + "=".repeat(20));
         resultLogger.logSectionHeader("Read/Write Throughput Test");
-        resultLogger.log("Configuration: Total Ops=%d, Read Ratio=%.2f", MAX_OPS, readRatio);
+        resultLogger.log("Configuration: Total Ops=%d, Read Ratio=%.2f, Write Batch Size=%d", MAX_OPS, readRatio, OP_BATCH_SIZE);
         String nodeLabel = graphName;
         long duration;
 
@@ -355,21 +388,39 @@ public class BenchmarkRunner implements AutoCloseable {
         try (Session session = driver.session()) {
             long opsCounter = 0;
             long testStartNanos = System.nanoTime();
+            List<Map<String, Object>> writeBatch = new ArrayList<>(OP_BATCH_SIZE);
 
             for (int op : ops) {
                 if (op == 0) { // Read
                     long vid = rand.nextLong(maxVid) + 1;
-                    session.run("MATCH (a:`" + nodeLabel + "` {id: $vid})-->(b) RETURN b.id", Map.of("vid", vid));
-                } else { // Write
+                    session.readTransaction(tx -> tx.run("MATCH (a:`" + nodeLabel + "` {id: $vid})-->(b) RETURN b.id", Map.of("vid", vid)).consume());
+                } else { // Write - add to batch
                     long src = rand.nextLong(maxVid) + 1;
                     long dst = rand.nextLong(maxVid) + 1;
-                    session.run("MATCH (a:`" + nodeLabel + "` {id: $src}), (b:`" + nodeLabel + "` {id: $dst}) CREATE (a)-[:REL]->(b)", Map.of("src", src, "dst", dst));
+                    writeBatch.add(Map.of("src", src, "dst", dst));
+                    if (writeBatch.size() >= OP_BATCH_SIZE) {
+                        final List<Map<String, Object>> batchToCommit = new ArrayList<>(writeBatch);
+                        session.writeTransaction(tx -> {
+                            tx.run("UNWIND $batch as edge MATCH (a:`" + nodeLabel + "` {id: edge.src}), (b:`" + nodeLabel + "` {id: edge.dst}) CREATE (a)-[:REL]->(b)", Map.of("batch", batchToCommit));
+                            return null;
+                        });
+                        writeBatch.clear();
+                    }
                 }
                 opsCounter++;
                 if (opsCounter % (PROGRESS_OP_INTERVAL * 10) == 0 || opsCounter == MAX_OPS) {
                     System.out.printf("\rExecuting Ops: %d / %d (%.2f%%)", opsCounter, MAX_OPS, (double) opsCounter / MAX_OPS * 100);
                 }
             }
+            // Commit any remaining writes in the batch
+            if (!writeBatch.isEmpty()) {
+                 final List<Map<String, Object>> batchToCommit = new ArrayList<>(writeBatch);
+                 session.writeTransaction(tx -> {
+                    tx.run("UNWIND $batch as edge MATCH (a:`" + nodeLabel + "` {id: edge.src}), (b:`" + nodeLabel + "` {id: edge.dst}) CREATE (a)-[:REL]->(b)", Map.of("batch", batchToCommit));
+                    return null;
+                });
+            }
+
             duration = System.nanoTime() - testStartNanos;
             System.out.println();
         }
@@ -401,13 +452,23 @@ public class BenchmarkRunner implements AutoCloseable {
         long start, end;
         
         try (Session session = driver.session()) {
-            // Add Vertex Property
+            List<Map<String, Object>> batch = new ArrayList<>(OP_BATCH_SIZE);
+            
+            // Add Vertex Property (Batched)
             for (int i=0; i < MAX_BASIC_OP; i++) {
                 long vid = rand.nextLong(maxVid) + 1;
-                start = System.nanoTime();
-                session.run("MATCH (n:`" + nodeLabel + "` {id: $id}) SET n.newProp = $val", Map.of("id", vid, "val", i));
-                end = System.nanoTime();
-                latencies.add(end - start);
+                batch.add(Map.of("id", vid, "val", i));
+                if(batch.size() == OP_BATCH_SIZE || i == MAX_BASIC_OP - 1) {
+                    start = System.nanoTime();
+                    session.writeTransaction(tx -> {
+                        tx.run("UNWIND $batch as item MATCH (n:`" + nodeLabel + "` {id: item.id}) SET n.newProp = item.val", Map.of("batch", batch));
+                        return null;
+                    });
+                    end = System.nanoTime();
+                    long avgLatency = (end - start) / batch.size();
+                    for(int j=0; j<batch.size(); j++) latencies.add(avgLatency);
+                    batch.clear();
+                }
                 if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rAdd Property: %d / %d", i+1, MAX_BASIC_OP);
             }
             System.out.println();
@@ -416,13 +477,21 @@ public class BenchmarkRunner implements AutoCloseable {
             resultLogger.log(LatencyStats.fromNanos(latencies).toString());
             latencies.clear();
 
-            // Delete Vertex Property
+            // Delete Vertex Property (Batched)
             for (int i=0; i < MAX_BASIC_OP; i++) {
                 long vid = rand.nextLong(maxVid) + 1;
-                start = System.nanoTime();
-                session.run("MATCH (n:`" + nodeLabel + "` {id: $id}) REMOVE n.newProp", Map.of("id", vid));
-                end = System.nanoTime();
-                latencies.add(end - start);
+                batch.add(Map.of("id", vid));
+                 if(batch.size() == OP_BATCH_SIZE || i == MAX_BASIC_OP - 1) {
+                    start = System.nanoTime();
+                    session.writeTransaction(tx -> {
+                        tx.run("UNWIND $batch as item MATCH (n:`" + nodeLabel + "` {id: item.id}) REMOVE n.newProp", Map.of("batch", batch));
+                        return null;
+                    });
+                    end = System.nanoTime();
+                    long avgLatency = (end - start) / batch.size();
+                    for(int j=0; j<batch.size(); j++) latencies.add(avgLatency);
+                    batch.clear();
+                }
                 if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rDelete Property: %d / %d", i+1, MAX_BASIC_OP);
             }
             System.out.println();
@@ -558,7 +627,7 @@ public class BenchmarkRunner implements AutoCloseable {
         for (int i = 0; i < runs; i++) {
             System.out.printf("\r%s run %d/%d...", testName, i + 1, runs);
             long start = System.currentTimeMillis();
-            session.run(cypherQuery, params);
+            session.run(cypherQuery, params).consume();
             long end = System.currentTimeMillis();
             timings.add(end - start);
         }

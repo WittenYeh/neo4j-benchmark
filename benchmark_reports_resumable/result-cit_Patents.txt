@@ -1,0 +1,77 @@
+=================================================
+        Neo4j Benchmark Results
+=================================================
+Graph Name: cit_Patents
+-------------------------------------------------
+
+==================== Data Loading Summary ====================
+Total time: 579.274 seconds
+Node loading throughput: 6516.38 nodes/sec
+Edge loading throughput: 28516.64 edges/sec
+
+==================== GDS Algorithm Throughput Test ====================
+Testing algorithm(s): all
+
+--- PageRank Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 2.954 s
+Average Throughput: 29785994.65 edges/sec
+
+--- WCC Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 1.469 s
+Average Throughput: 59918809.75 edges/sec
+
+--- CDLP Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 3.742 s
+Average Throughput: 23519113.72 edges/sec
+
+--- Dijkstra (SSSP simulation) Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 1.901 s
+Average Throughput: N/A (zero time or no edges)
+
+--- BFS Throughput Summary ---
+Total Iterations: 10
+Average Execution Time: 0.786 s
+Average Throughput: N/A (zero time or no edges)
+
+==================== Basic Operations Latency Test ====================
+
+--- Operation: Add Vertex ---
+Total Operations: 10240
+Avg Latency: 18.87 us
+Min Latency: 18.87 us
+Max Latency: 18.87 us
+p50 Latency: 18.87 us
+p95 Latency: 18.87 us
+p99 Latency: 18.87 us
+
+--- Operation: Add Edge ---
+Total Operations: 10240
+Avg Latency: 34.59 us
+Min Latency: 34.59 us
+Max Latency: 34.59 us
+p50 Latency: 34.59 us
+p95 Latency: 34.59 us
+p99 Latency: 34.59 us
+
+--- Operation: Delete Edge ---
+Attempted Operations: 10240
+Successful Deletions: 10240
+Avg Latency: 11.36 us
+Min Latency: 11.36 us
+Max Latency: 11.36 us
+p50 Latency: 11.36 us
+p95 Latency: 11.36 us
+p99 Latency: 11.36 us
+
+--- Operation: Get Neighbors ---
+Total Operations: 10240
+Avg Latency: 986.21 us
+Min Latency: 614.49 us
+Max Latency: 31516.41 us
+p50 Latency: 927.49 us
+p95 Latency: 1379.22 us
+p99 Latency: 1807.50 us
