@@ -27,7 +27,7 @@ all_dfs = []
 for dataset_name, data in results_data.items():
     df = pd.DataFrame(data).T
     df = df.reset_index().rename(columns={'index': 'Operation'})
-    df_melted = df.melt(id_vars='Operation', var_name='Transaction Type', value_name='Time (ms)')
+    df_melted = df.melt(id_vars='Operation', var_name='Transaction Type', value_name='Time (us)')
     df_melted['Dataset'] = dataset_name
     all_dfs.append(df_melted)
 
@@ -42,7 +42,7 @@ sns.set_theme(style="whitegrid")
 g = sns.catplot(
     data=combined_df,
     x='Operation',
-    y='Time (ms)',
+    y='Time (us)',
     hue='Transaction Type',
     col='Dataset', # 关键：根据'Dataset'列来创建子图
     kind='bar',
@@ -70,12 +70,12 @@ for ax in g.axes.flat:
                        textcoords = 'offset points')
 
 # 设置主标题和坐标轴标签
-g.fig.suptitle('Performance Comparison Across Datasets', y=1.03, fontsize=16) # y > 1.0 以免和子图标题重叠
-g.set_axis_labels("Operation", "Time (ms) - Log Scale")
+g.fig.suptitle('Performance Comparison Across Datasets', y=1.10, fontsize=16) # y > 1.0 以免和子图标题重叠
+g.set_axis_labels("Operation", "Time (us) - Log Scale")
 g.set_titles("{col_name}") # 设置每个子图的标题
 
 # 自动调整图例位置
-sns.move_legend(g, "upper right", bbox_to_anchor=(.95, .95))
+sns.move_legend(g, "upper right", bbox_to_anchor=(1.05, 1.05))
 
 # 调整整体布局
 plt.tight_layout(rect=[0, 0, 1, 0.97]) # rect 调整边界，为大标题留出空间
