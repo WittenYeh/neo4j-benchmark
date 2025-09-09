@@ -5,73 +5,73 @@ Graph Name: com_lj
 -------------------------------------------------
 
 ==================== Data Loading Summary ====================
-Total time: 1776.951 seconds
-Node loading throughput: 2249.90 nodes/sec
-Edge loading throughput: 39034.49 edges/sec
+Total time: 1926.436 seconds
+Node loading throughput: 2075.32 nodes/sec
+Edge loading throughput: 36005.54 edges/sec
 
 ==================== GDS Algorithm Throughput Test ====================
 Testing algorithm(s): all
 
 --- PageRank Throughput Summary ---
 Total Iterations: 10
-Average Execution Time: 17.169 s
-Average Throughput: 5124835.60 edges/sec
+Average Execution Time: 15.812 s
+Average Throughput: 5564872.63 edges/sec
 
 --- WCC Throughput Summary ---
 Total Iterations: 10
-Average Execution Time: 2.258 s
-Average Throughput: 38971858.53 edges/sec
+Average Execution Time: 2.285 s
+Average Throughput: 38513000.83 edges/sec
 
 --- CDLP Throughput Summary ---
 Total Iterations: 10
-Average Execution Time: 9.915 s
-Average Throughput: 8874553.94 edges/sec
+Average Execution Time: 9.993 s
+Average Throughput: 8805493.31 edges/sec
 
 --- Dijkstra (SSSP simulation) Throughput Summary ---
 Total Iterations: 10
-Average Execution Time: 18.203 s
-Average Throughput: 3810575.30 edges/sec
+Average Execution Time: 19.176 s
+Average Throughput: 3617239.60 edges/sec
 
 --- BFS Throughput Summary ---
 Total Iterations: 10
-Average Execution Time: 6.652 s
-Average Throughput: 10426983.25 edges/sec
+Average Execution Time: 7.267 s
+Average Throughput: 9544580.86 edges/sec
 
 ==================== Basic Operations Latency Test ====================
 
 --- Operation: Add Vertex ---
 Total Operations: 10240
-Avg Latency: 23.87 us
-Min Latency: 23.87 us
-Max Latency: 23.87 us
-p50 Latency: 23.87 us
-p95 Latency: 23.87 us
-p99 Latency: 23.87 us
+Avg Latency: 20.12 us
+Min Latency: 20.12 us
+Max Latency: 20.12 us
+p50 Latency: 20.12 us
+p95 Latency: 20.12 us
+p99 Latency: 20.12 us
 
 --- Operation: Add Edge ---
 Total Operations: 10240
-Avg Latency: 87.14 us
-Min Latency: 87.14 us
-Max Latency: 87.14 us
-p50 Latency: 87.14 us
-p95 Latency: 87.14 us
-p99 Latency: 87.14 us
+Avg Latency: 67.12 us
+Min Latency: 67.12 us
+Max Latency: 67.12 us
+p50 Latency: 67.12 us
+p95 Latency: 67.12 us
+p99 Latency: 67.12 us
 
 --- Operation: Delete Edge ---
 Attempted Operations: 10240
 Successful Deletions: 10240
-Avg Latency: 11.74 us
-Min Latency: 11.74 us
-Max Latency: 11.74 us
-p50 Latency: 11.74 us
-p95 Latency: 11.74 us
-p99 Latency: 11.74 us
+Avg Latency: 11.22 us
+Min Latency: 11.22 us
+Max Latency: 11.22 us
+p50 Latency: 11.22 us
+p95 Latency: 11.22 us
+p99 Latency: 11.22 us
 
 --- Operation: Get Neighbors ---
 Total Operations: 10240
-Avg Latency: 1261.06 us
-Min Latency: 578.48 us
-Max Latency: 38236.96 us
-p50 Latency: 1087.21 us
-p95 Latency: 2113.45 us
-p99 Latency: 3532.13 us
+Avg Latency: 607.33 us
+Min Latency: 243.59 us
+Max Latency: 29315.55 us
+p50 Latency: 461.94 us
+p95 Latency: 1244.47 us
+p99 Latency: 2389.05 us

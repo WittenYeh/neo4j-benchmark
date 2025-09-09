@@ -344,15 +344,26 @@ public class BenchmarkRunner implements AutoCloseable {
             latencies.clear();
 
             // 4. Get Neighbors (Read-only, no batching needed for transactions)
-            for (int i = 0; i < MAX_BASIC_OP; i++) {
-                long vid = rand.nextLong(maxVid) + 1;
-                start = System.nanoTime();
-                // Use readTransaction for read-only queries
-                session.readTransaction(tx -> tx.run("MATCH (a:`" + nodeLabel + "` {id: $vid})-->(b) RETURN b.id", Map.of("vid", vid)).consume());
-                end = System.nanoTime();
-                latencies.add(end - start);
-                if ((i+1) % PROGRESS_OP_INTERVAL == 0 || (i+1) == MAX_BASIC_OP) System.out.printf("\rGet Neighbors: %d / %d", i+1, MAX_BASIC_OP);
-            }
+            try (Transaction tx = session.beginTransaction()) {
+                for (int i = 0; i < MAX_BASIC_OP; i++) {
+                    long vid = rand.nextLong(maxVid) + 1;
+
+                    // 在事务内部，我们只关心 run() 方法本身的耗时
+                    start = System.nanoTime();
+                    // 直接在创建好的 tx 对象上执行 run 方法
+                    tx.run("MATCH (a:`" + nodeLabel + "` {id: $vid})-->(b) RETURN b.id", Map.of("vid", vid)).consume();
+                    end = System.nanoTime();
+                    
+                    latencies.add(end - start);
+
+                    if ((i + 1) % PROGRESS_OP_INTERVAL == 0 || (i + 1) == MAX_BASIC_OP) {
+                        System.out.printf("\rGet Neighbors: %d / %d", i + 1, MAX_BASIC_OP);
+                    }
+                }
+                // 当循环成功结束后，提交事务
+                tx.commit();
+            } // try-with-resources 会在此处自动关闭事务。如果循环中出现异常，会自动回滚(rollback)。
+
             System.out.println();
             resultLogger.log("\n--- Operation: Get Neighbors ---");
             resultLogger.log("Total Operations: %d", MAX_BASIC_OP);

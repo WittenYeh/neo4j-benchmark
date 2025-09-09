@@ -8,17 +8,20 @@ results_data = {
     "DBLP": {
         "Add Vertex": {"NO Transaction": 31.66, "Transaction": 2355.34},
         "Add Edge": {"NO Transaction": 40.37, "Transaction": 1430.97},
-        "Delete Edge": {"NO Transaction": 19.72, "Transaction": 1199.21}
+        "Delete Edge": {"NO Transaction": 19.72, "Transaction": 1199.21},
+        "Get Neighbors": {"NO Transaction": 469.85, "Transaction": 1674.08}
     },
     "COM-LJ": {
         "Add Vertex": {"NO Transaction": 23.87, "Transaction": 2788.31},
         "Add Edge": {"NO Transaction": 87.14, "Transaction": 2642.62},
-        "Delete Edge": {"NO Transaction": 11.74, "Transaction": 1779.72}
+        "Delete Edge": {"NO Transaction": 11.74, "Transaction": 1779.72},
+        "Get Neighbors": {"NO Transaction": 607.33, "Transaction": 2244.11}
     },
     "Cit-Patents": {
         "Add Vertex": {"NO Transaction": 18.87, "Transaction": 2606.59},
         "Add Edge": {"NO Transaction": 34.59, "Transaction": 1802.87},
-        "Delete Edge": {"NO Transaction": 11.36, "Transaction": 1393.62}
+        "Delete Edge": {"NO Transaction": 11.36, "Transaction": 1393.62},
+        "Get Neighbors": {"NO Transaction": 532.93, "Transaction": 1443.35}
     }
 }
 
